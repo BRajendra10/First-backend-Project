@@ -1,12 +1,12 @@
 import express from 'express'
-import cros from 'cros'
+import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
 const app = express();
 
-app.use(cros({
+app.use(cors({
     origin: process.env.CORS_ORIGIN,
-    Credential: true
+    credentials: true
 }))
 
 app.use(express.json({limit: "16kb"}))
