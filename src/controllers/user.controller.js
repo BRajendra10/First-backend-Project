@@ -76,15 +76,6 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 const loginUser = asyncHandler(async (req, res) => {
-    // TODO:
-
-    // Get user email and password req.body
-    // username or email
-    // find the user
-    // password check
-    // access and refresh token 
-    // send cokkies
-    // login successfully
 
     const { username, email, password } = req.body
 
@@ -386,7 +377,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 })
 
 const getWatchHistory = asyncHandler(async (req, res) => {
-    const user = await User.aggregate({
+
+    const user = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
@@ -426,12 +418,12 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                 ]
             }
         }
-    })
+    ])
 
     return res
     .status(200)
     .json(
-        new ApiResponse(200, user[0].WatchHistory. "Watch history fetched succefully")
+        new ApiResponse(200, user[0].WatchHistory, "Watch history fetched succefully")
     )
 
 })

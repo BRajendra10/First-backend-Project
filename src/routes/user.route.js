@@ -34,9 +34,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser)
 
-
 // secured Routes
-
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refresh_token").post(refreshAccessToken)
 router.route("/change_password").post(verifyJWT, changeCurrentPassword)
@@ -44,9 +42,10 @@ router.route("/current_user").get(verifyJWT, getCurrentUser)
 router.route("/update_details").patch(verifyJWT, updateAccountDetails)
 
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
-router.route("/cover_image").path(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
+router.route("/cover_image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
 router.route("/history").get(verifyJWT, getWatchHistory)
+
 
 export default router
