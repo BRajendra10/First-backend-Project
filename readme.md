@@ -6,5 +6,3 @@ Initially, it started as a **learning project**, inspired by the amazing tutoria
 All **credits** go to him for teaching backend development from scratch in a **clear and beginner-friendly** way.
 
 ---
-
-Would you like me to help you extend this section with a short **tech stack**, **features**, or **setup instructions** for your README?
