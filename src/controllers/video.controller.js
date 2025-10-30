@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asynHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponce.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js'
 import { Video } from '../models/video.model.js';
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -72,28 +73,55 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 
-// const publishVideo = AsynHandler(async (req, res) => {
-//     // TODO: 
+const publishVideo = asyncHandler(async (req, res) => {
+    // TODO: 
 
-//     // get title, description,
-//     // check if title and description realy come or not
-//     // get video and thumbnail from public/temp folder localpath
-//     // check if localpath avilable
-//     // send them to cloudinary
-//     // check if cloudinary give path
-//     // create video data with video file, thunmbnail, title, description, duration (we can get that from cloudinar responce)
-//     // check if video data is created or not 
-//     // send responce
+    // get title, description,
+    // check if title and description realy come or not
+    // get video and thumbnail from public/temp folder localpath
+    // check if localpath avilable
+    // send them to cloudinary
+    // check if cloudinary give path
+    // create video data with video file, thunmbnail, title, description, duration (we can get that from cloudinar responce)
+    // check if video data is created or not 
+    // send responce
 
-//     const { title, description } = req.body
+    const { title, description } = req.body
 
-//     if ([title, description].some((field) => field?.trim() === "")) {
-//         throw new ApiError(400, "All fields are required")
-//     }
+    if ([title, description].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "All fields are required")
+    }
 
-//     const videoLocalPath = req.files?.
+    const videoFileLocalPath = req.files?.videoFile[0]?.path
+    const thumbnailLocalPath = req.files?.thumbnail[0]?.path
 
+    if(!videoFileLocalPath) {
+        throw new ApiError(400, "Video file is required")
+    }
 
-// })
+    const videoFile = await uploadOnCloudinary(videoFileLocalPath);
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+    
+    if(!videoFile) {
+        throw new ApiError(400, "Video file is required, error while uploading on cloudinary.")
+    }
 
-export { getAllVideos }
+    const videoData = await Video.create({
+        title,
+        description,
+        videoFile: videoFile?.url,
+        thumbnail: thumbnail?.url || "",
+        owner: req.user?._id,
+        duration: videoFile?.duration
+    })
+
+    if(!videoData){
+        throw new ApiError(500, "Something went arong while uploading video on database")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(201, videoData, "Video added successfully")
+    )
+})
+
+export { getAllVideos, publishVideo }
