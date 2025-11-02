@@ -7,7 +7,23 @@ import mongoose from 'mongoose'
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const { page, limit, query, sortBy, sortType, userId } = req.query
+
+    if (isNaN(page) || page < 1) {
+        throw new ApiError(400, "Invalid 'page' value. It must be a positive number.");
+    }
+
+    if (isNaN(limit) || limit < 1 || limit > 50) {
+        throw new ApiError(400, "Invalid 'limit' value. It must be between 1 and 50.");
+    }
+
+    if (!["asc", "desc"].includes(sortType)) {
+        throw new ApiError(400, "Invalid 'sortType' value. Use 'asc' or 'desc'.");
+    }
+
+    if ([query, sortBy, userId].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "query, sortBy and user Id are required")
+    }
 
     const videos = await Video.aggregate([
         {
@@ -26,21 +42,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
         },
         {
             $limit: parseInt(limit)
-        },
-        {
-            $addFields: {
-                search: query
-            }
-        },
-        {
-            $project: {
-                videos: 1,
-                search: 1
-            }
         }
     ])
 
-    if (!videos.length) {
+    if (!videos) {
         throw new ApiError(404, "videos data does not exist.")
     }
 
@@ -114,7 +119,7 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
         }
     )
 
-    if(!video) {
+    if (!video) {
         throw new ApiError(500, "Something went wrong while updating video credentials")
     }
 
@@ -129,17 +134,13 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
     const { ID } = req.body
     const thumbnailLocalPath = req.file?.path
 
-    if(!ID){
-        throw new ApiError(400, "Video id is required")
-    }
-
-    if(!thumbnailLocalPath) {
-        throw new ApiError(400, "Thumbnail is required")
+    if ([ID, thumbnailLocalPath].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "All fields are required")
     }
 
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
 
-    if(!thumbnail) {
+    if (!thumbnail) {
         throw new ApiError(400, "Error while uploading thumnail on cloudinary")
     }
 
