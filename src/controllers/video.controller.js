@@ -96,6 +96,28 @@ const publishVideo = asyncHandler(async (req, res) => {
         )
 })
 
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    //TODO: get video by id
+
+    if(!videoId) {
+        throw new ApiError(400, "Video id is required")
+    }
+
+    const video = await Video.findById(new mongoose.Types.ObjectId(videoId))
+
+    if(!video) {
+        throw new ApiError(400, "Video does not exist")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, video, "Video fetched successfully")
+        )
+
+})
+
 const updateVideoDetails = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
@@ -179,4 +201,4 @@ const deleteVideo = asyncHandler(async (req, res) => {
     )
 })
 
-export { getAllVideos, publishVideo, deleteVideo, updateVideoDetails, updateVideoThumbnail }
+export { getAllVideos, publishVideo, deleteVideo, updateVideoDetails, updateVideoThumbnail, getVideoById }
