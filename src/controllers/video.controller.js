@@ -25,7 +25,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "query, sortBy and user Id are required")
     }
 
-    const videos = await Video.aggregate([
+    const videos = Video.aggregate([
         {
             $match: {
                 $or: [
@@ -36,22 +36,23 @@ const getAllVideos = asyncHandler(async (req, res) => {
         },
         {
             $sort: { createdAt: sortType === 'desc' ? -1 : 1 }
-        },
-        {
-            $skip: (parseInt(page) - 1) * parseInt(limit)
-        },
-        {
-            $limit: parseInt(limit)
         }
     ])
 
-    if (!videos) {
+    const options = {
+        page: 1,
+        limit: 10,
+    };
+
+    const result = await Video.aggregatePaginate(videos, options);
+
+    if (!result) {
         throw new ApiError(404, "videos data does not exist.")
     }
 
     return res
         .status(200)
-        .json(new ApiResponse(200, videos, "Videos data fetched successfully"))
+        .json(new ApiResponse(200, result, "Videos data fetched successfully"))
 
 })
 
@@ -98,15 +99,14 @@ const publishVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-    //TODO: get video by id
 
-    if(!videoId) {
+    if (!videoId) {
         throw new ApiError(400, "Video id is required")
     }
 
     const video = await Video.findById(new mongoose.Types.ObjectId(videoId))
 
-    if(!video) {
+    if (!video) {
         throw new ApiError(400, "Video does not exist")
     }
 
@@ -121,7 +121,6 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideoDetails = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
-    //TODO: update video details like title, description, thumbnail
 
     if ([title, description, videoId].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "title, description and videoId are required")
@@ -188,7 +187,6 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-    //TODO: delete video
 
     if (!videoId) {
         throw new ApiError(400, "Video ID is required")
