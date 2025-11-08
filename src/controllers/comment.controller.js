@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { isValidObjectId } from 'mongoose'
 import { Comment } from '../models/comment.model.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponce.js';
@@ -8,9 +8,14 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
 
-    if (!videoId || !page || !limit) {
-        throw new ApiError(400, "VideoId, page and limit is required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
     }
+
+    if (!page || !limit) {
+        throw new ApiError(400, "page and limit is required")
+    }
+
 
     const allComments = Comment.aggregate([
         {
@@ -44,7 +49,7 @@ const addComment = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { comment } = req.body
 
-    if (!videoId || !comment) {
+    if (!videoId || !isValidObjectId(videoId) || !comment) {
         throw new ApiError(400, "Video id and comment are required")
     }
 
@@ -59,9 +64,9 @@ const addComment = asyncHandler(async (req, res) => {
     }
 
     return res
-        .status(200)
+        .status(201)
         .json(
-            new ApiResponse(200, createdComment, "Comment added successfully")
+            new ApiResponse(201, createdComment, "Comment added successfully")
         )
 
 })
@@ -70,8 +75,8 @@ const updateComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params
     const { comment } = req.body
 
-    if (!commentId || !comment) {
-        throw new ApiError(400, "comment id and comment are required")
+    if (!isValidObjectId(commentId) || !comment) {
+        throw new ApiError(400, "comment id is required and should be valid")
     }
 
     const updatedComment = await Comment.findByIdAndUpdate(
@@ -101,8 +106,8 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params
 
-    if (!commentId) {
-        throw new ApiError(400, "comment Id is required")
+    if (!commentId || !isValidObjectId(commentId)) {
+        throw new ApiError(400, "comment Id is required and should be valid")
     }
 
     await Comment.findByIdAndDelete(new mongoose.Types.ObjectId(commentId))

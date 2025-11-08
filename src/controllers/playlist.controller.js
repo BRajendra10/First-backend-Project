@@ -23,9 +23,9 @@ const createPlaylist = asyncHandler(async (req, res) => {
     }
 
     return res
-        .status(200)
+        .status(201)
         .json(
-            new ApiResponse(200, createdPlaylist, "Playlist created successfully")
+            new ApiResponse(201, createdPlaylist, "Playlist created successfully")
         )
 
 })
@@ -33,8 +33,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
 const getUserPlaylists = asyncHandler(async (req, res) => {
     const { userId } = req.params
 
-    if (!userId) {
-        throw new ApiError(400, "User id is required")
+    if (!userId || !isValidObjectId(userId)) {
+        throw new ApiError(400, "user id is required and should be valid. !!")
     }
 
     const playlists = await Playlist.find({ owner: userId });
@@ -50,13 +50,11 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
 
-    const ID = new mongoose.Types.ObjectId(playlistId)
-
-    if (!ID) {
-        throw new ApiError(400, "Playlist id is required")
+    if (!playlistId || !isValidObjectId(playlistId)) {
+        throw new ApiError(400, "playlist id is required and should be valid. !!")
     }
 
-    const playlistData = await Playlist.findById(ID)
+    const playlistData = await Playlist.findById(new mongoose.Types.ObjectId(playlistId))
 
     if (!playlistData) {
         throw new ApiError(400, "Something went wrong while fetching playlist. Playlist does not exist")
@@ -73,8 +71,12 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
     const { playlistId, videoId } = req.params
 
-    if (!playlistId || !videoId) {
-        throw new ApiError(400, "palylist and video id required")
+    if (!playlistId || !isValidObjectId(playlistId)) {
+        throw new ApiError(400, "playlist id is required and should be valid. !!")
+    }
+
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
     }
 
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
@@ -102,8 +104,12 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     const { playlistId, videoId } = req.params
 
-    if (!playlistId || !videoId) {
-        throw new ApiError(400, "palylist and video id required")
+    if (!playlistId || !isValidObjectId(playlistId)) {
+        throw new ApiError(400, "playlist id is required and should be valid. !!")
+    }
+
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
     }
 
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
@@ -127,13 +133,11 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 const deletePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
 
-    const ID = new mongoose.Types.ObjectId(playlistId)
-
-    if (!ID) {
-        throw new ApiError(400, "Playlist id is required")
+    if (!playlistId || !isValidObjectId(playlistId)) {
+        throw new ApiError(400, "playlist id is required and should be valid. !!")
     }
 
-    await Playlist.findByIdAndDelete(ID)
+    await Playlist.findByIdAndDelete(new mongoose.Types.ObjectId(playlistId))
 
     return res
         .status(200)
@@ -147,10 +151,8 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
     const { name, description } = req.body
 
-    const ID = new mongoose.Types.ObjectId(playlistId)
-
-    if (!ID) {
-        throw new ApiError(400, "Playlist id is required")
+    if (!playlistId || !isValidObjectId(playlistId)) {
+        throw new ApiError(400, "playlist id is required and should be valid. !!")
     }
 
     if (!name || !description) {
@@ -158,7 +160,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     }
 
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
-        ID,
+        new mongoose.Types.ObjectId(playlistId),
         {
             $set: {
                 name,

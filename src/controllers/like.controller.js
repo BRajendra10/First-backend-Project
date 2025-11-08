@@ -7,8 +7,8 @@ import { asyncHandler } from '../utils/asynHandler.js';
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
-    if (!videoId) {
-        throw new ApiError(400, "video id is required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid")
     }
 
     const existingLike = await Like.findOne({
@@ -47,8 +47,8 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const { commentId } = req.params
 
-    if (!commentId) {
-        throw new ApiError(400, "Comment id is required")
+    if (!commentId || !isValidObjectId(commentId)) {
+        throw new ApiError(400, "Comment id is required and should be valid")
     }
 
     const existingLike = await Like.findOne({
