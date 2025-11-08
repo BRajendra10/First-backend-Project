@@ -202,7 +202,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
 
     if (!isPasswordCorrect) {
-        throw new ApiError(400, "Invalid old password")
+        throw new ApiError(401, "Invalid old password")
     }
 
     user.password = newPassword
@@ -244,7 +244,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated succefully"))
 })
 
-
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
 
@@ -273,7 +272,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "avatar image updated succefully"))
 
 })
-
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path
@@ -363,8 +361,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             }
         }
     ])
-
-    console.log(channel)
 
     if(!channel?.length){
         throw new ApiError(404, "channel does not exists")

@@ -1,10 +1,9 @@
+import mongoose, { isValidObjectId } from 'mongoose'
 import { asyncHandler } from '../utils/asynHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponce.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
 import { Video } from '../models/video.model.js';
-import mongoose from 'mongoose'
-
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page, limit, query, sortBy, sortType, userId } = req.query
@@ -100,14 +99,14 @@ const publishVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
-    if (!videoId) {
-        throw new ApiError(400, "Video id is required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
     }
 
     const video = await Video.findById(new mongoose.Types.ObjectId(videoId))
 
     if (!video) {
-        throw new ApiError(400, "Video does not exist")
+        throw new ApiError(400, "Video does not exist !!")
     }
 
     return res
@@ -122,8 +121,12 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
 
-    if ([title, description, videoId].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "title, description and videoId are required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
+    }
+
+    if ([title, description].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "title and description are required !!")
     }
 
     const video = await Video.findByIdAndUpdate(
@@ -141,7 +144,7 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
     )
 
     if (!video) {
-        throw new ApiError(500, "Something went wrong while updating video credentials")
+        throw new ApiError(500, "Something went wrong while updating video credentials !!")
     }
 
     return res
@@ -152,11 +155,15 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
 })
 
 const updateVideoThumbnail = asyncHandler(async (req, res) => {
-    const { ID } = req.body
+    const { videoId } = req.body
     const thumbnailLocalPath = req.file?.path
 
-    if ([ID, thumbnailLocalPath].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "All fields are required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
+    }
+
+    if (thumbnailLocalPath) {
+        throw new ApiError(400, "thumnail is required are required")
     }
 
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
@@ -166,7 +173,7 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
     }
 
     const video = await Video.findByIdAndUpdate(
-        new mongoose.Types.ObjectId(ID),
+        new mongoose.Types.ObjectId(videoId),
         {
             $set: {
                 thumbnail: thumbnail.url
@@ -188,8 +195,8 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
-    if (!videoId) {
-        throw new ApiError(400, "Video ID is required")
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, "video id is required and should be valid. !!")
     }
 
     await Video.findByIdAndDelete(videoId)

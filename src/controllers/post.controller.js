@@ -1,6 +1,5 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Post } from '../models/post.model.js';
-// import {User} from "../models/user.model.js"
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponce.js';
 import { asyncHandler } from '../utils/asynHandler.js';
@@ -22,7 +21,7 @@ const createPost = asyncHandler(async (req, res) => {
     }
 
     return res
-        .status(200)
+        .status(201)
         .json(
             new ApiResponse(201, createdPost, "Post is created successfully")
         )
